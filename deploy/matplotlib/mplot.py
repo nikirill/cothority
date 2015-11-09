@@ -28,20 +28,47 @@ class MPlot:
             print "http://matplotlib.org/faq/installing_faq.html\n"
             exit(1)
         self.plt = plt
+        self.resetMinMax()
 
     def readCSV(self, name):
         print 'Reading ' + name
 
+    def resetMinMax(self):
+        self.ymin = -1
+        self.ymax = 0
+        self.xmin = -1
+        self.xmax = 0
+
+
+    # Updates the xmin and xmax with the given values on the x-axis
+    def updateX(self, *values):
+        for v in values:
+            if self.xmin == -1:
+                self.xmin = min(v)
+            else:
+                self.xmin = min(self.xmin, min(v))
+            self.xmax = max(self.xmax, max(v))
+
+    # Updates the xmin and xmax with the given values on the y-axis
+    def updateY(self, *values):
+        for v in values:
+            if self.ymin == -1:
+                self.ymin = min(v)
+            else:
+                self.ymin = min(self.ymin, min(v))
+            self.ymax = max(self.ymax, max(v))
+
     # Adds a fill_between and the corresponding 'empty' plot to show up in
     # the legend
-    def plotFilledLegend(self, stats, col1, col2, label, color, z=None):
-        stats.reset_min_max()
-        y1 = stats.update_values(col1)
-        y2 = stats.update_values(col2)
+    def plotFilledLegend(self, x, y1, y2, label, color, z=None):
+        print x, y1, y2
         if z:
-            fb = plt.fill_between(stats.x, y1, y2, facecolor=color, edgecolor='white', zorder=z)
+            fb = plt.fill_between(x, y1, y2, facecolor=color, edgecolor='white', zorder=z)
         else:
-            fb = plt.fill_between(stats.x, y1, y2, facecolor=color, edgecolor='white', zorder=3)
+            fb = plt.fill_between(x, y1, y2, facecolor=color, edgecolor='white', zorder=3)
+
+        self.updateX(x)
+        self.updateY(y1, y2)
         # plt.plot([], [], '-', label=label, color=color, linewidth=10)
 
     # Takes one x and y1, y2 to stack y2 on top of y1. Does all the
@@ -120,6 +147,8 @@ class MPlot:
         else:
             print "Saving to", self.pngname
             plt.savefig(self.pngname)
+
+        self.resetMinMax()
 
 
     # Draws an arrow for out-of-bound data

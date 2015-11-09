@@ -22,7 +22,8 @@ color4_dark = 'red'
 mplot = MPlot()
 mplot.plotPrepareLogLog()
 
-mplot.xmin = -1
-jvss = CSVStats('test_naive_multi.csv').get_values('round')
+mplot.show_fig = True
+jvss = CSVStats('test_naive_multi.csv').get_values('round_wall')
 plt.plot(jvss.x, jvss.avg, label='JVSS', linestyle='-', marker='^', color=color2_dark, zorder=3)
 mplot.plotFilledLegend(jvss.x, jvss.min, jvss.max, "min-max", color2_light, z=0)
+mplot.plotEnd()

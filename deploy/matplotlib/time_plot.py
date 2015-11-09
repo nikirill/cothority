@@ -60,36 +60,35 @@ def CoJVTimeBars(cothority, jvss, naive):
 # Plots a Cothority and a JVSS run with regard to their averages. Supposes that
 # the last two values from JVSS are off-grid and writes them with arrows
 # directly on the plot
-def plotAvg(cothority, jvss, naive, ntree):
+def plotAvg(co, jvss, naive, nt):
     mplot.plotPrepareLogLog()
 
-    mplot.xmin = -1
-    jvss = CSVStats(jvss).get_values('round')
-    plt.plot(jvss.x, jvss.avg, label='JVSS', linestyle='-', marker='^', color=color2_dark, zorder=3)
-    mplot.plotFilledLegend(jvss.x, jvss.min, jvss.max, "min-max", color2_light, z=0)
-    #mplot.arrow("{:.1f} sec      ".format(mplot.avg[-2]), mplot.x[-2], 4, color2_dark)
-    #mplot.arrow("      {:.0f} sec".format(mplot.avg[-1]), mplot.x[-1], 4, color2_dark)
+    j = jvss.get_values('round_wall')
+    plt.plot(j.x, j.avg, label='JVSS', linestyle='-', marker='^', color=color2_dark, zorder=3)
+    mplot.plotFilledLegend(j.x, j.min, j.max, "min-max", color2_light, z=0)
+    # mplot.arrow("{:.1f} sec      ".format(mplot.avg[-2]), mplot.x[-2], 4, color2_dark)
+    # mplot.arrow("      {:.0f} sec".format(mplot.avg[-1]), mplot.x[-1], 4, color2_dark)
 
-def otherPlot():
-    mplot.readCSV(naive)
-    plt.plot(mplot.x, mplot.avg, label='Naive', linestyle='-', marker='s', color=color3_dark, zorder=3)
-    mplot.plotFilledLegend(mplot.x, mplot.tmin, mplot.tmax, "min-max", color3_light, z=0)
+    na = naive.get_values('round_wall')
+    plt.plot(na.x, na.avg, label='Naive', linestyle='-', marker='s', color=color3_dark, zorder=3)
+    mplot.plotFilledLegend(na.x, na.min, na.max, "min-max", color3_light, z=0)
     # arrow("{:.1f} sec      ".format(avg[-2]), x[-2], 4, color3_dark)
-    mplot.arrow("      {:.0f} sec".format(mplot.avg[-1]), mplot.x[-1], 4, color3_dark)
+    #mplot.arrow("      {:.0f} sec".format(mplot.avg[-1]), mplot.x[-1], 4, color3_dark)
 
-    mplot.readCSV(ntree)
-    plt.plot(mplot.x, mplot.avg, label='Ntree', linestyle='-', marker='s', color=color4_dark, zorder=3)
-    mplot.plotFilledLegend(mplot.x, mplot.tmin, mplot.tmax, "min-max", color4_light, z=0)
+    nt = ntree.get_values('round_wall')
+    plt.plot(nt.x, nt.avg, label='Ntree', linestyle='-', marker='s', color=color4_dark, zorder=3)
+    mplot.plotFilledLegend(nt.x, nt.min, nt.max, "min-max", color4_light, z=0)
     # arrow("{:.1f} sec      ".format(avg[-2]), x[-2], 4, color3_dark)
     # arrow("      {:.0f} sec".format(avg[-1]), x[-1], 4, color3_dark)
 
-    mplot.readCSV(cothority)
-    plt.plot(mplot.x, mplot.avg, label='Cothority', linestyle='-', marker='o', color=color1_dark, zorder=5)
-    mplot.plotFilledLegend(mplot.x, mplot.tmin, mplot.tmax, "min-max", color1_light, z=4)
+    co = cothority.get_values('round_wall')
+    plt.plot(co.x, co.avg, label='Cothority', linestyle='-', marker='o', color=color1_dark, zorder=5)
+    mplot.plotFilledLegend(co.x, co.min, co.max, "min-max", color1_light, z=4)
 
     # Make horizontal lines and add arrows for JVSS
-    plt.ylim(mplot.ymin, 4)
-    plt.xlim(mplot.xmin, mplot.xmax * 1.2)
+    xmin, xmax, ymin, ymax = CSVStats.get_min_max(j, na, nt, co)
+    plt.ylim(ymin, 4)
+    plt.xlim(xmin, xmax * 1.2)
     plt.ylabel('Seconds per round')
 
     plt.legend(loc=u'lower right')
@@ -144,8 +143,7 @@ if len(sys.argv) > args + 2:
     pngname = sys.argv[-1]
 
 option = sys.argv[1]
-cothority, jvss, naive, naive_sc, ntree = CSVStats(sys.argv[2]), CSVStats(sys.argv[3]),
-CSVStats(sys.argv[4]), CSVStats(sys.argv[5]), CSVStats(sys.argv[5])
+cothority, jvss, naive, naive_sc, ntree = CSVStats(sys.argv[2]), CSVStats(sys.argv[3]), CSVStats(sys.argv[4]), CSVStats(sys.argv[5]), CSVStats(sys.argv[5])
 
 if option == "0":
     plotAvg(cothority, jvss, naive, ntree)

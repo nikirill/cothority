@@ -9,6 +9,7 @@ import unittest
 csv.register_dialect('deploy', delimiter=',', doublequote=False, quotechar='', lineterminator='\n', escapechar='',
                      quoting=csv.QUOTE_NONE, skipinitialspace=True)
 
+
 class CSVStats:
     x = []
 
@@ -19,7 +20,6 @@ class CSVStats:
     def __init__(self, file, x_id=0):
         self.x = []
         self.columns = {}
-        self.reset_min_max()
         # Read in all lines of the CSV and store in the arrays
         with open(file) as csvfile:
             reader = csv.DictReader(csvfile, dialect='deploy')
@@ -27,7 +27,6 @@ class CSVStats:
                 for column, value in row.iteritems():
                     if not column in self.columns:
                         self.columns[column] = []
-                    print value
                     self.columns[column] += [float(value)]
 
         if type(x_id) == str:
@@ -40,26 +39,18 @@ class CSVStats:
     # Updates the self.(x|y)(min|max)
     def get_values(self, column):
         values = Values(self.x, column, self.columns)
-
-        # I suppose that x is > 0 anyway, so I can test on -1
-        # and max will always be >= 0
-        if self.xmin == -1:
-            # Suppose it's the start, so also init ymin
-            self.xmin = min(values.x)
-            self.ymin = min(values.min)
-        else:
-            self.xmin = min(self.xmin, min(values.x))
-            self.ymin = min(self.ymin, values.ymin)
-        self.xmax = max(self.xmax, max(values.x))
-        self.ymax = max(self.ymax, values.ymax)
         return values
 
-    # Resets (x|y)(min|max)
-    def reset_min_max(self):
-        self.xmin = -1
-        self.xmax = 0
-        self.ymin = -1
-        self.ymax = 0
+
+    @staticmethod
+    def get_min_max(*vals):
+        values_y = []
+        values_x = []
+        for v in vals:
+            values_y += [v.ymin, v.ymax]
+            values_x += v.x
+        return (min(values_x), max(values_x),min(values_y), max(values_y))
+
 
 # Value holds the min / max / avg / dev for a single named value
 class Values:
@@ -74,6 +65,7 @@ class Values:
         self.dev = columns[column + "_dev"]
         self.ymin = min(self.min)
         self.ymax = max(self.max)
+
 
 class TestStringMethods(unittest.TestCase):
     def test_load(self):
@@ -97,6 +89,7 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(stats.xmax, 8)
         self.assertEqual(stats.ymin, 2)
         self.assertEqual(stats.ymax, 9)
+
 
 if __name__ == '__main__':
     unittest.main()
