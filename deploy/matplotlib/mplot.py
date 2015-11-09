@@ -60,7 +60,8 @@ class MPlot:
 
     # Adds a fill_between and the corresponding 'empty' plot to show up in
     # the legend
-    def plotFilledLegend(self, x, y1, y2, label, color, z=None):
+    def plotFilledLegend(self, stats, label, color, z=None):
+        x, y1, y2 = stats.x, stats.min, stats.max
         print x, y1, y2
         if z:
             fb = plt.fill_between(x, y1, y2, facecolor=color, edgecolor='white', zorder=z)

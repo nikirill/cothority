@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #CSV="shs2.csv smah.csv naive.csv naive_sc.csv ntree.csv"
-CSV="test_shamir_multi.csv test_shamir_multi.csv test_naive_multi.csv test_naive_multi.csv test_ntree_multi.csv"
+CSV="test_sign_multi.csv test_shamir_multi.csv test_naive_multi.csv test_naive_multi.csv test_ntree_multi.csv"
 
 python time_plot.py 0 $CSV comparison_roundtime.png
 #python2.7 time_plot.py 0 $CSV

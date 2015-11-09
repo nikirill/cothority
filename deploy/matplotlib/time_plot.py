@@ -72,7 +72,7 @@ def plotAvg(co, jvss, naive, nt):
     na = naive.get_values('round_wall')
     plt.plot(na.x, na.avg, label='Naive', linestyle='-', marker='s', color=color3_dark, zorder=3)
     mplot.plotFilledLegend(na.x, na.min, na.max, "min-max", color3_light, z=0)
-    # arrow("{:.1f} sec      ".format(avg[-2]), x[-2], 4, color3_dark)
+    #mplot.arrow("{:.1f} sec      ".format(avg[-2]), x[-2], 4, color3_dark)
     #mplot.arrow("      {:.0f} sec".format(mplot.avg[-1]), mplot.x[-1], 4, color3_dark)
 
     nt = ntree.get_values('round_wall')
@@ -143,7 +143,7 @@ if len(sys.argv) > args + 2:
     pngname = sys.argv[-1]
 
 option = sys.argv[1]
-cothority, jvss, naive, naive_sc, ntree = CSVStats(sys.argv[2]), CSVStats(sys.argv[3]), CSVStats(sys.argv[4]), CSVStats(sys.argv[5]), CSVStats(sys.argv[5])
+cothority, jvss, naive, naive_sc, ntree = CSVStats(sys.argv[2]), CSVStats(sys.argv[3]), CSVStats(sys.argv[4]), CSVStats(sys.argv[5]), CSVStats(sys.argv[6])
 
 if option == "0":
     plotAvg(cothority, jvss, naive, ntree)
