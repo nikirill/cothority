@@ -11,6 +11,11 @@ import matplotlib.patches as mpatches
 from matplotlib.legend_handler import HandlerLine2D, HandlerRegularPolyCollection
 
 
+# Our CSVs have a space after the comma, so we need a new 'dialect', here
+# called 'deploy'
+csv.register_dialect('deploy', delimiter=',', doublequote=False, quotechar='', lineterminator='\n', escapechar='',
+                     quoting=csv.QUOTE_NONE, skipinitialspace=True)
+
 class MPlot:
     show_fig = True
     pngname = ""
@@ -23,6 +28,9 @@ class MPlot:
             print "http://matplotlib.org/faq/installing_faq.html\n"
             exit(1)
         self.plt = plt
+
+    def readCSV(self, name):
+        print 'Reading ' + name
 
     # Adds a fill_between and the corresponding 'empty' plot to show up in
     # the legend

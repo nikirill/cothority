@@ -64,12 +64,13 @@ def plotAvg(cothority, jvss, naive, ntree):
     mplot.plotPrepareLogLog()
 
     mplot.xmin = -1
-    mplot.readCSV(jvss)
-    plt.plot(mplot.x, mplot.avg, label='JVSS', linestyle='-', marker='^', color=color2_dark, zorder=3)
-    mplot.plotFilledLegend(mplot.x, mplot.tmin, mplot.tmax, "min-max", color2_light, z=0)
-    mplot.arrow("{:.1f} sec      ".format(mplot.avg[-2]), mplot.x[-2], 4, color2_dark)
-    mplot.arrow("      {:.0f} sec".format(mplot.avg[-1]), mplot.x[-1], 4, color2_dark)
+    jvss = CSVStats(jvss).get_values('round')
+    plt.plot(jvss.x, jvss.avg, label='JVSS', linestyle='-', marker='^', color=color2_dark, zorder=3)
+    mplot.plotFilledLegend(jvss.x, jvss.min, jvss.max, "min-max", color2_light, z=0)
+    #mplot.arrow("{:.1f} sec      ".format(mplot.avg[-2]), mplot.x[-2], 4, color2_dark)
+    #mplot.arrow("      {:.0f} sec".format(mplot.avg[-1]), mplot.x[-1], 4, color2_dark)
 
+def otherPlot():
     mplot.readCSV(naive)
     plt.plot(mplot.x, mplot.avg, label='Naive', linestyle='-', marker='s', color=color3_dark, zorder=3)
     mplot.plotFilledLegend(mplot.x, mplot.tmin, mplot.tmax, "min-max", color3_light, z=0)
