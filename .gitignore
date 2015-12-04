@@ -32,3 +32,4 @@ app/conode/real/
 
 *.pyc
 *.toml
+*.DS_Store
