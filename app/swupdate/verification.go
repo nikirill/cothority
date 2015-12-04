@@ -2,18 +2,11 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 
 	"github.com/dedis/cothority/lib/dbg"
 
 	"golang.org/x/crypto/openpgp"
-)
-
-var (
-	PolicyFile     = "example/policy.txt"
-	SignaturesFile = "example/signatures.txt"
-	CommitIdFile   = "example/commitid.txt"
 )
 
 type commitPolicy struct {
@@ -30,14 +23,14 @@ type Signedcommit struct {
 
 func checkFileError(err error, filename string) {
 	if err != nil {
-		dbg.Lvl1("Could not read file", filename)
+		dbg.Error("Could not read file", filename)
 	}
 }
 
-func main() {
+func ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile string) (bool, error) {
 	var (
-		commit     Signedcommit
-		developers openpgp.EntityList
+		commit     Signedcommit               // Commit corresponding to a binary release to be sgined
+		developers openpgp.EntityList         // List of all developers whose public keys are in the policy file
 		approvers  map[string]*openpgp.Entity // Map of developers who provided a valid signature. Indexed by public key id (openpgp.PrimaryKey.KeyIdString)
 		err        error
 	)
@@ -76,18 +69,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Update is approved? %t", len(approvers) >= commit.Policy.Threshold)
+	dbg.Lvl2("Update is approved? ", len(approvers) >= commit.Policy.Threshold)
 
-	//fmt.Println(entityList)
-	// body, _ := ioutil.ReadAll(block.Body)
-	// fmt.Println(block.Type)
-	// fmt.Println(string(body))
-
-	// bufbytes := bytes.NewBuffer(buf)
-	// result, err := armor.Decode(bufbytes)
-	// if err != nil {
-	// 	log.Fatal("Couldn't decode signatures", err)
-	// }
-	// body, _ := ioutil.ReadAll(result.Body)
-	// fmt.Println(result.Type, result.Header, string(body))
+	return len(approvers) >= commit.Policy.Threshold, err
 }
