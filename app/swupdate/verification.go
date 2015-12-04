@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/crypto/openpgp"
+	"github.com/dedis/cothority/lib/dbg"
 
-	"github.com/dedis/cothority/lib/debug_lvl"
+	"golang.org/x/crypto/openpgp"
 )
 
 var (
@@ -30,7 +30,7 @@ type SignedCommit struct {
 
 func checkFileError(err error, filename string) {
 	if err != nil {
-		debug_lvl.Lvl1("Could not read file", filename)
+		dbg.Lvl1("Could not read file", filename)
 	}
 }
 
@@ -54,7 +54,7 @@ func main() {
 	for _, pubkey := range Commit.Policy.DevPubKeys {
 		keybuf, err := openpgp.ReadArmoredKeyRing(strings.NewReader(pubkey))
 		if err != nil {
-			debug_lvl.Error("Could not decode armored public key", err)
+			dbg.Error("Could not decode armored public key", err)
 		}
 		for _, entity := range keybuf {
 			developers = append(developers, entity)
@@ -65,7 +65,7 @@ func main() {
 	for _, signature := range Commit.Signatures {
 		result, err := openpgp.CheckArmoredDetachedSignature(developers, bytes.NewBufferString(Commit.CommitID), strings.NewReader(signature))
 		if err != nil {
-			debug_lvl.Error("Did not manage to verify signature", err)
+			dbg.Error("Did not manage to verify signature", err)
 		}
 		fmt.Println("Author of signature is", result.Identities)
 	}

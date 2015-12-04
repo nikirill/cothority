@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/dedis/cothority/lib/debug_lvl"
+	"github.com/dedis/cothority/lib/dbg"
 	"golang.org/x/crypto/openpgp"
 )
 
@@ -229,7 +229,7 @@ ehUiAg==
 
 	developers, err := openpgp.ReadArmoredKeyRing(strings.NewReader(privatering))
 	if err != nil {
-		debug_lvl.Error("Could not read private keyring", err)
+		dbg.Error("Could not read private keyring", err)
 	}
 
 	w := new(bytes.Buffer)
@@ -240,7 +240,7 @@ ehUiAg==
 
 	err = ioutil.WriteFile("signatures.txt", w.Bytes(), 0660)
 	if err != nil {
-		debug_lvl.Error("Could not write to a file", err)
+		dbg.Error("Could not write to a file", err)
 	}
 
 	fmt.Println(w.String())

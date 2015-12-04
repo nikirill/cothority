@@ -6,19 +6,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dedis/cothority/lib/debug_lvl"
+	"github.com/dedis/cothority/lib/dbg"
 )
 
 // Scanner for a file contatining singatures
 func SigScanner(filename string) ([]string, error) {
 	var blocks []string
 	head := "-----BEGIN PGP SIGNATURE-----"
-	debug_lvl.Lvl3("Reading file", filename)
+	dbg.Lvl3("Reading file", filename)
 
 	file, err := os.Open(filename)
 	defer file.Close()
 	if err != nil {
-		debug_lvl.Lvl1("Couldn't open file", file, err)
+		dbg.Lvl1("Couldn't open file", file, err)
 		return nil, err
 	}
 
@@ -26,10 +26,10 @@ func SigScanner(filename string) ([]string, error) {
 	var block []string
 	for scanner.Scan() {
 		text := scanner.Text()
-		debug_lvl.Lvl3("Decoding", text)
+		dbg.Lvl3("Decoding", text)
 		// end of the first part
 		if text == head {
-			debug_lvl.Lvl2("Found header")
+			dbg.Lvl2("Found header")
 			if len(block) > 0 {
 				blocks = append(blocks, strings.Join(block, "\n"))
 				block = make([]string, 0)
@@ -46,12 +46,12 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 	var threshold int
 	var cothkey string
 
-	debug_lvl.Lvl3("Reading file", filename)
+	dbg.Lvl3("Reading file", filename)
 
 	file, err := os.Open(filename)
 	defer file.Close()
 	if err != nil {
-		debug_lvl.Lvl1("Couldn't open file", file, err)
+		dbg.Lvl1("Couldn't open file", file, err)
 		return -1, nil, "", err
 	}
 
@@ -60,12 +60,12 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 	devkeys := make([]string, 0)
 	for scanner.Scan() {
 		text := scanner.Text()
-		debug_lvl.Lvl3("Decoding", text)
+		dbg.Lvl3("Decoding", text)
 
 		switch text {
 		case "Threshold:":
 			// reading threshold number
-			debug_lvl.Lvl2("Found Threshold")
+			dbg.Lvl2("Found Threshold")
 			// if we have found "threshold" word, we know that the value is
 			// in the next line so we scan next line and if it is not empty,
 			// we save the value as the threshold
@@ -75,7 +75,7 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 				threshold, err = strconv.Atoi(text)
 			}
 			if err != nil {
-				debug_lvl.Error("Could not convert threshold into a number")
+				dbg.Error("Could not convert threshold into a number")
 			}
 			// If there is a key block being constructed when we encounter the threshold,
 			// we know that the key block is fulfilled so we have have to append it to
@@ -87,7 +87,7 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 
 		case "-----BEGIN PGP PUBLIC KEY BLOCK-----":
 			// reading developers' public keys
-			debug_lvl.Lvl2("Found Developers' public keys")
+			dbg.Lvl2("Found Developers' public keys")
 			if len(keyblock) > 0 {
 				// if keyblock already exsits, it means that we encounter beggining of a new key,
 				// so we need to save the previous one and start constructing a new one
@@ -98,7 +98,7 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 
 		case "Cothority Public Key:":
 			// reading cothority public key
-			debug_lvl.Lvl2("Found Cothority public key")
+			dbg.Lvl2("Found Cothority public key")
 			if len(keyblock) > 0 {
 				devkeys = append(devkeys, strings.Join(keyblock, "\n"))
 				keyblock = make([]string, 0)
@@ -139,19 +139,19 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 
 // Scanner for a file containing commit id
 func CommitScanner(filename string) (string, error) {
-	debug_lvl.Lvl3("Reading file", filename)
+	dbg.Lvl3("Reading file", filename)
 
 	file, err := os.Open(filename)
 	defer file.Close()
 	if err != nil {
-		debug_lvl.Lvl1("Couldn't open file", file, err)
+		dbg.Lvl1("Couldn't open file", file, err)
 		return "", err
 	}
 
 	comid := make([]byte, 40)
 	_, err = file.Read(comid)
 	if err != nil {
-		debug_lvl.Lvl1("Couldn't read from file", filename, err)
+		dbg.Lvl1("Couldn't read from file", filename, err)
 		return "", err
 	}
 
