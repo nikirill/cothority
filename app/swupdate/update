@@ -1,0 +1,54 @@
+#!/bin/sh
+# This is an update server-side hook. The hook is invoked on a remote server when 
+# someone tries to push into this server. The hook is also run once for each branch 
+# that a pusher is trying to update. The purpose of the hook is
+# to restrict possibilities of modifying refs/notes/signatures that 
+# is used to store signatures of developers on a given commit. Basically,
+# only appending text to an existing note or creating a new note are allowed.
+# The script returns number more than zero in case of unallowed operation which results
+# in push rejection on server side.
+
+
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+date > /tmp/githook
+echo $refname $oldrev $newrev >> /tmp/githook
+
+	
+# Examine only commits on special notes branch for signatures that
+# is used to solely save signatures in it.
+# (the branch is actually not visible but it is used by Git automatically)
+if [ "$refname" = "refs/notes/signatures" ]; then
+
+	# For every commit in the push, we want to check that
+	# allowed git-notes subcommands have been applied.
+	# We check every commit on the path between a starting reference
+	# and a final reference.
+	for ref in $( git rev-list $oldrev..$newrev ); do
+		COMMIT_MSG=$( git cat-file commit $ref )
+		#echo $(git cat-file commit $ref) >> /tmp/githook
+		if echo $COMMIT_MSG | tail -n 1 | grep -q "notes remove"; then
+			# We don't allow removal of notes
+			exit 1
+		fi
+
+		if echo $COMMIT_MSG | tail -n 1 | grep -q "notes edit"; then
+			# We don't allow notes editing to avoid deletion of public keys of other developers
+			exit 1
+		fi
+
+		if echo $COMMIT_MSG | tail -n 1 | grep -q "notes merge"; then
+			# We don't allow merging notes containing signatures to avoid merge conflicts
+			exit 1
+		fi
+
+		if echo $COMMIT_MSG | tail -n 1 | grep -q "git notes add"; then
+			# We don't allow using add subcommand because it can overwrite an existing note if it is used with '-f' option
+			exit 1
+		fi
+	done
+fi
+
+exit 0
