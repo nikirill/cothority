@@ -16,15 +16,15 @@ var (
 	CommitIdFile   = "example/commitid.txt"
 )
 
-type CommitPolicy struct {
+type commitPolicy struct {
 	Threshold  int      // Sufficient number of developers that must signed off to approve a commit
 	DevPubKeys []string // Developers' personal PGP public keys
 	CothKey    string   // Public key of cothority server that this group of developers sends approval to
 }
 
-type SignedCommit struct {
-	CommitID   string       // ID of a git commit that has been signed oof by developers
-	Policy     CommitPolicy // Security policy for this very commit
+type Signedcommit struct {
+	commitID   string       // ID of a git commit that has been signed oof by developers
+	Policy     commitPolicy // Security policy for this very commit
 	Signatures []string     // Signatures of developers on the commit
 }
 
@@ -36,22 +36,25 @@ func checkFileError(err error, filename string) {
 
 func main() {
 	var (
-		Commit SignedCommit
-		err    error
+		commit     Signedcommit
+		developers openpgp.EntityList
+		approvers  map[string]*openpgp.Entity // Map of developers who provided a valid signature. Indexed by public key id (openpgp.PrimaryKey.KeyIdString)
+		err        error
 	)
 
-	Commit.Policy.Threshold, Commit.Policy.DevPubKeys, Commit.Policy.CothKey, err = PolicyScanner(PolicyFile)
+	commit.Policy.Threshold, commit.Policy.DevPubKeys, commit.Policy.CothKey, err = PolicyScanner(PolicyFile)
 	checkFileError(err, PolicyFile)
-	Commit.Signatures, err = SigScanner(SignaturesFile)
+	commit.Signatures, err = SigScanner(SignaturesFile)
 	checkFileError(err, SignaturesFile)
-	Commit.CommitID, err = CommitScanner(CommitIdFile)
+	commit.commitID, err = CommitScanner(CommitIdFile)
 	checkFileError(err, CommitIdFile)
 
+	approvers = make(map[string]*openpgp.Entity)
+
 	// Creating openpgp entitylist from list of public keys
-	var developers openpgp.EntityList
 	developers = make(openpgp.EntityList, 0)
 
-	for _, pubkey := range Commit.Policy.DevPubKeys {
+	for _, pubkey := range commit.Policy.DevPubKeys {
 		keybuf, err := openpgp.ReadArmoredKeyRing(strings.NewReader(pubkey))
 		if err != nil {
 			dbg.Error("Could not decode armored public key", err)
@@ -62,13 +65,18 @@ func main() {
 	}
 
 	// Verifying every signature in the list and counting valid ones
-	for _, signature := range Commit.Signatures {
-		result, err := openpgp.CheckArmoredDetachedSignature(developers, bytes.NewBufferString(Commit.CommitID), strings.NewReader(signature))
+	for _, signature := range commit.Signatures {
+		result, err := openpgp.CheckArmoredDetachedSignature(developers, bytes.NewBufferString(commit.commitID), strings.NewReader(signature))
 		if err != nil {
-			dbg.Error("Did not manage to verify signature", err)
+			dbg.Lvl1("The signature is invalid or cannot be verified due to", err)
+		} else {
+			if approvers[result.PrimaryKey.KeyIdString()] == nil { // We need to check that this is a unique signature
+				approvers[result.PrimaryKey.KeyIdString()] = result
+			}
 		}
-		fmt.Println("Author of signature is", result.Identities)
 	}
+
+	fmt.Printf("Update is approved? %t", len(approvers) >= commit.Policy.Threshold)
 
 	//fmt.Println(entityList)
 	// body, _ := ioutil.ReadAll(block.Body)
@@ -82,27 +90,4 @@ func main() {
 	// }
 	// body, _ := ioutil.ReadAll(result.Body)
 	// fmt.Println(result.Type, result.Header, string(body))
-
-	// result, err = armor.Decode(bufbytes)
-	// if err != nil {
-	// 	log.Fatal("Couldn't decode signatures", err)
-	// }
-	// body, _ = ioutil.ReadAll(result.Body)
-	// fmt.Println(result.Type, result.Header, string(body))
-
-	/*
-
-		comfile, err := os.Open("example/commitid.txt")
-		if err != nil {
-			panic(err)
-		}
-		defer comfile.Close()
-
-		b1 := make([]byte, 40)
-		n1, err := comfile.Read(b1)
-		ci.CommitID = string(b1)
-
-		fmt.Println(ci.CommitID)
-		fmt.Println("example printing", n1)
-	*/
 }
