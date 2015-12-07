@@ -13,7 +13,7 @@ var (
 func main() {
 	answer, err := ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile)
 	if err != nil {
-		dbg.Panic("Problem with verifying approval of developers")
+		dbg.Panic("Problem with verifying approval of developers", err)
 	}
 	dbg.Lvl1("Is release approved by developers?", answer)
 }
