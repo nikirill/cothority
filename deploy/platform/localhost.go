@@ -2,11 +2,6 @@ package platform
 
 import (
 	"fmt"
-	"github.com/dedis/cothority/lib/app"
-	"github.com/dedis/cothority/lib/cliutils"
-	"github.com/dedis/cothority/lib/dbg"
-	"github.com/dedis/cothority/lib/graphs"
-	"github.com/dedis/cothority/lib/monitor"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -16,6 +11,12 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/dedis/cothority/lib/app"
+	"github.com/dedis/cothority/lib/cliutils"
+	"github.com/dedis/cothority/lib/dbg"
+	"github.com/dedis/cothority/lib/graphs"
+	"github.com/dedis/cothority/lib/monitor"
 )
 
 // Localhost is responsible for launching the app with the specified number of nodes
@@ -122,7 +123,7 @@ func (d *Localhost) Deploy(rc RunConfig) error {
 	// everything else with the actual appConfig (which comes from the
 	// runconfig-file)
 	switch d.App {
-	case "sign", "stamp":
+	case "sign", "stamp", "swupdate":
 		conf := app.ConfigColl{}
 		conf.StampsPerRound = -1
 		conf.StampRatio = 1.0
