@@ -29,7 +29,7 @@ func SigScanner(filename string) ([]string, error) {
 		dbg.Lvl3("Decoding", text)
 		// end of the first part
 		if text == head {
-			dbg.Lvl2("Found header")
+			dbg.Lvl3("Found header")
 			if len(block) > 0 {
 				blocks = append(blocks, strings.Join(block, "\n"))
 				block = make([]string, 0)
@@ -87,7 +87,7 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 
 		case "-----BEGIN PGP PUBLIC KEY BLOCK-----":
 			// reading developers' public keys
-			dbg.Lvl2("Found Developers' public keys")
+			dbg.Lvl3("Found Developers' public keys")
 			if len(keyblock) > 0 {
 				// if keyblock already exsits, it means that we encounter beggining of a new key,
 				// so we need to save the previous one and start constructing a new one
@@ -98,7 +98,7 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 
 		case "Cothority Public Key:":
 			// reading cothority public key
-			dbg.Lvl2("Found Cothority public key")
+			dbg.Lvl3("Found Cothority public key")
 			if len(keyblock) > 0 {
 				devkeys = append(devkeys, strings.Join(keyblock, "\n"))
 				keyblock = make([]string, 0)

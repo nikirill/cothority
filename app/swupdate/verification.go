@@ -69,7 +69,7 @@ func ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile string) (bool, error
 		}
 	}
 
-	dbg.Lvl2("Update is approved? ", len(approvers) >= commit.Policy.Threshold)
+	dbg.Lvl3("Is update approved? ", len(approvers) >= commit.Policy.Threshold)
 
 	return len(approvers) >= commit.Policy.Threshold, err
 }
