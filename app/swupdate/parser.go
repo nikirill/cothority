@@ -65,7 +65,7 @@ func PolicyScanner(filename string) (int, []string, string, error) {
 		switch text {
 		case "Threshold:":
 			// reading threshold number
-			dbg.Lvl2("Found Threshold")
+			dbg.Lvl3("Found Threshold")
 			// if we have found "threshold" word, we know that the value is
 			// in the next line so we scan next line and if it is not empty,
 			// we save the value as the threshold
