@@ -53,19 +53,24 @@ func main() {
 	}
 
 	if app.RunFlags.AmRoot {
-		answer, err := ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile)
+		devApproval, err := ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile) // Check if developers have approved the release
 		if err != nil {
 			dbg.Panic("Problem with verifying approval of developers", err)
 		}
-		dbg.Lvl1("Is release approved by developers on the root?", answer)
-		round := NewRoundUpdate(peer.Node)
-		round.Hash = []byte(Commit.CommitID) // passing hash of the file that we want to produce a sigature for
-		peer.StartAnnouncement(round)
+		dbg.Lvlf2("Is release approved by developers on the root? %+v", devApproval)
 
-		Signature := <-round.Signature
-		peer.SendCloseAll()
+		if devApproval {
+			round := NewRoundUpdate(peer.Node)
+			round.Hash = []byte(Commit.CommitID) // passing hash of the file that we want to produce a sigature for
+			peer.StartAnnouncement(round)
 
-		dbg.Lvlf1("Received signature %+v", Signature)
+			Signature := <-round.Signature
+			peer.SendCloseAll()
+
+			dbg.Lvlf1("Received signature %+v", Signature)
+		} else {
+			dbg.Print("Developers related to the root haven't approved the release so the root didn't start signing process")
+		}
 	} else {
 		peer.LoopRounds(RoundUpdateType, conf.Rounds)
 	}

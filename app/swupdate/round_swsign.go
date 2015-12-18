@@ -61,6 +61,14 @@ func (round *RoundUpdate) Challenge(in *sign.SigningMessage, out []*sign.Signing
 
 func (round *RoundUpdate) Response(in []*sign.SigningMessage, out *sign.SigningMessage) error {
 	if !round.IsRoot {
+		devApproval, err := ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile) // Check if developers have approved the release
+		if err != nil {
+			dbg.Panic("Problem with verifying approval of developers", err)
+		}
+		if !devApproval {
+			dbg.Lvl1("Developers haven't approved this release")
+			round.RaiseException()
+		}
 		// Check on something, when it fails, call
 		// round.RaiseException()
 	}
