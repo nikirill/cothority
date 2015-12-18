@@ -57,9 +57,9 @@ func main() {
 		if err != nil {
 			dbg.Panic("Problem with verifying approval of developers", err)
 		}
-		dbg.Lvl1("Is release approved by developers?", answer)
+		dbg.Lvl1("Is release approved by developers on the root?", answer)
 		round := NewRoundUpdate(peer.Node)
-		round.Hash = nil // pass hash of file
+		round.Hash = []byte(Commit.CommitID) // passing hash of the file that we want to produce a sigature for
 		peer.StartAnnouncement(round)
 
 		Signature := <-round.Signature
