@@ -16,6 +16,18 @@ var (
 	CommitIdFile   = "example/commitid.txt"
 )
 
+var Releases map[string]SignedCommit
+
+func ReleaseInformation() {
+	c, err := ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile)
+	if err != nil {
+		dbg.Panic("Problem with verifying approval of developers", err)
+	} else {
+		Releases[c.CommitID] = c
+		dbg.Lvl3("Retrieved information about release\n")
+	}
+}
+
 func main() {
 	conf := &app.ConfigColl{}
 	app.ReadConfig(conf)
@@ -38,6 +50,9 @@ func main() {
 	app.RunFlags.StartedUp(len(conf.Hosts))
 	peer := conode.NewPeer(hostname, conf.ConfigConode)
 
+	Releases = make(map[string]SignedCommit)
+	ReleaseInformation()
+
 	if app.RunFlags.AmRoot {
 		for {
 			time.Sleep(time.Second)
@@ -53,15 +68,11 @@ func main() {
 	}
 
 	if app.RunFlags.AmRoot {
-		devApproval, err := ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile) // Check if developers have approved the release
-		if err != nil {
-			dbg.Panic("Problem with verifying approval of developers", err)
-		}
-		dbg.Lvlf2("Is release approved by developers on the root? %+v", devApproval)
-
-		if devApproval {
-			round := NewRoundUpdate(peer.Node)
-			round.Hash = []byte(Commit.CommitID) // passing hash of the file that we want to produce a sigature for
+		hashToSign, _ := CommitScanner(CommitIdFile) // retrieve commitid/hash that the root is willing to get signed
+		commitToSign := Releases[hashToSign]
+		if commitToSign.Approval {
+			round := NewRoundSwsign(peer.Node)
+			round.Hash = []byte(hashToSign) // passing hash of the file that we want to produce a signature for
 			peer.StartAnnouncement(round)
 
 			Signature := <-round.Signature
@@ -69,10 +80,10 @@ func main() {
 
 			dbg.Lvlf1("Received signature %+v", Signature)
 		} else {
-			dbg.Print("Developers related to the root haven't approved the release so the root didn't start signing process")
+			dbg.Fatal("Developers related to the root haven't approved the release so the root didn't start signing process")
 		}
 	} else {
-		peer.LoopRounds(RoundUpdateType, conf.Rounds)
+		peer.LoopRounds(RoundSwsignType, conf.Rounds)
 	}
 
 	dbg.Lvlf3("Done - flags are %+v", app.RunFlags)
