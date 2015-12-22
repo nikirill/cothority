@@ -43,23 +43,24 @@ func NewRoundSwsign(node *sign.Node) *RoundSwsign {
 }
 
 func (round *RoundSwsign) Announcement(viewNbr, roundNbr int, in *sign.SigningMessage, out []*sign.SigningMessage) error {
+	err := round.RoundException.Announcement(viewNbr, roundNbr, in, out)
 	if round.IsRoot {
-		// MTRoot contains the hash to be signed by everybody
+		// If root, send hash to be signed to all outgoing channels (children)
 		for i := range out {
-			*out[i].Am.Message = round.Hash
+			out[i].Am.Message = round.Hash
 		}
+	} else {
+		// If child, retrieve corresponding commit from a table to check approval later
+		commitToSign = Releases[string(in.Am.Message)]
 	}
-	return round.RoundException.Announcement(viewNbr, roundNbr, in, out)
+
+	return err
 }
 
 func (round *RoundSwsign) Commitment(in []*sign.SigningMessage, out *sign.SigningMessage) error {
 	if round.IsRoot {
 		// MTRoot contains the hash to be signed by everybody
 		out.Com.MTRoot = round.Hash
-	} else {
-		// Leaves receive commitID that needs to be signed and verify if there is an approval in their map
-		commitToSign = Releases[string(in.Com.Message)]
-		dbg.Print(string(in.Com.Message))
 	}
 	return round.RoundException.Commitment(in, out)
 }
@@ -79,8 +80,6 @@ func (round *RoundSwsign) Response(in []*sign.SigningMessage, out *sign.SigningM
 		}
 
 		if !commitToSign.Approval {
-			dbg.Printf("Threshold = %+v", commitToSign.Policy.Threshold)
-			dbg.Printf("ID = %+v", commitToSign.CommitID)
 			dbg.Lvl1("Developers haven't approved this release")
 			round.RaiseException()
 		}
