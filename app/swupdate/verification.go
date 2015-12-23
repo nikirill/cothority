@@ -26,7 +26,7 @@ type SignedCommit struct {
 	CommitID   string       // ID of a git commit that has been signed oof by developers
 	Policy     commitPolicy // Security policy for this very commit
 	Signatures []string     // Signatures of developers on the commit
-	Approval   bool         // Flag whether the commit has been approved by developers
+	//Approval   bool         // Flag whether the commit has been approved by developers
 }
 
 func checkFileError(err error, filename string) {
@@ -35,7 +35,7 @@ func checkFileError(err error, filename string) {
 	}
 }
 
-func ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile string) (SignedCommit, error) {
+func ApprovalCheck(PolicyFile, SignaturesFile, Id string) (bool, error) {
 	var (
 		commit     SignedCommit               // Commit corresponding to be verified
 		developers openpgp.EntityList         // List of all developers whose public keys are in the policy file
@@ -47,9 +47,10 @@ func ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile string) (SignedCommi
 	checkFileError(err, PolicyFile)
 	commit.Signatures, err = SigScanner(SignaturesFile)
 	checkFileError(err, SignaturesFile)
-	commit.CommitID, err = CommitScanner(CommitIdFile)
-	checkFileError(err, CommitIdFile)
-	commit.Approval = false
+	commit.CommitID = Id
+	// commit.CommitID, err = CommitScanner(CommitIdFile)
+	// checkFileError(err, CommitIdFile)
+	// commit.Approval = false
 
 	approvers = make(map[string]*openpgp.Entity)
 
@@ -79,8 +80,8 @@ func ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile string) (SignedCommi
 	}
 
 	dbg.Lvl3("Is release approved? ", len(approvers) >= commit.Policy.Threshold)
-	commit.Approval = (len(approvers) >= commit.Policy.Threshold)
+	// commit.Approval = (len(approvers) >= commit.Policy.Threshold)
 
-	// return len(approvers) >= Commit.Policy.Threshold, err
-	return commit, err
+	return len(approvers) >= commit.Policy.Threshold, err
+	// return commit, err
 }

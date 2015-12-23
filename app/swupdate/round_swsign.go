@@ -14,7 +14,10 @@ already implements RoundStruct for your convenience.
 // The name type of this round implementation
 const RoundSwsignType = "swsign"
 
-var commitToSign SignedCommit
+var (
+	entry CommitEntry
+	msg   string
+)
 
 type RoundSwsign struct {
 	*sign.RoundStruct
@@ -51,7 +54,9 @@ func (round *RoundSwsign) Announcement(viewNbr, roundNbr int, in *sign.SigningMe
 		}
 	} else {
 		// If child, retrieve corresponding commit from a table to check approval later
-		commitToSign = Releases[string(in.Am.Message)]
+		// commitToSign = Releases[string(in.Am.Message)]
+		msg = string(in.Am.Message)
+		entry = Releases[msg]
 	}
 
 	return err
@@ -74,12 +79,13 @@ func (round *RoundSwsign) Challenge(in *sign.SigningMessage, out []*sign.Signing
 
 func (round *RoundSwsign) Response(in []*sign.SigningMessage, out *sign.SigningMessage) error {
 	if !round.IsRoot {
-		if commitToSign.CommitID == "" {
+		if entry.policy == "" || entry.signatures == "" {
 			dbg.Lvl1("The cothority server has not received information about this release from its developers")
 			round.RaiseException()
 		}
 
-		if !commitToSign.Approval {
+		decision, err := ApprovalCheck(entry.policy, entry.signatures, msg)
+		if !decision || err != nil {
 			dbg.Lvl1("Developers haven't approved this release")
 			round.RaiseException()
 		}

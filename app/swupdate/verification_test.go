@@ -14,12 +14,13 @@ func TestVerification(t *testing.T) {
 		CommitIdFile   = "example/commitid.txt"
 	)
 
-	co, err := ApprovalCheck(PolicyFile, SignaturesFile, CommitIdFile)
+	commitId, _ := CommitScanner(CommitIdFile)
+	decision, err := ApprovalCheck(PolicyFile, SignaturesFile, commitId)
 	if err != nil {
 		dbg.Panic("Problem with verifying approval of developers", err)
 	}
 
-	dbg.Printf("How many signatures have been read? %+v", len(co.Signatures))
-	dbg.Printf("What is a threshold value? %+v", co.Policy.Threshold)
-	dbg.Printf("Is commit approved? %+v", co.Approval)
+	// dbg.Printf("How many signatures have been read? %+v", len(co.Signatures))
+	// dbg.Printf("What is a threshold value? %+v", co.Policy.Threshold)
+	dbg.Printf("Is commit approved? %+v", decision)
 }
