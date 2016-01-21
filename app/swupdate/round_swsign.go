@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/dedis/cothority/lib/sign"
-
 	"github.com/dedis/cothority/lib/dbg"
+	"github.com/dedis/cothority/lib/monitor"
+	"github.com/dedis/cothority/lib/sign"
 )
 
 /*
@@ -84,11 +84,13 @@ func (round *RoundSwsign) Response(in []*sign.SigningMessage, out *sign.SigningM
 			round.RaiseException()
 		}
 
+		pgp := monitor.NewMeasure("pgp")
 		decision, err := ApprovalCheck(entry.policy, entry.signatures, msg)
 		if !decision || err != nil {
 			dbg.Lvl1("Developers haven't approved this release")
 			round.RaiseException()
 		}
+		pgp.Measure()
 		// Check on something, when it fails, call
 		// round.RaiseException()
 	}
