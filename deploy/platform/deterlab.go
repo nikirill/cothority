@@ -250,7 +250,7 @@ func (d *Deterlab) Deploy(rc RunConfig) error {
 	// everything else with the actual appConfig (which comes from the
 	// runconfig-file)
 	switch d.App {
-	case "sign", "stamp":
+	case "sign", "stamp", "swupdate":
 		conf := app.ConfigColl{}
 		conf.StampsPerRound = -1
 		conf.StampRatio = 1.0
@@ -320,8 +320,15 @@ func (d *Deterlab) Deploy(rc RunConfig) error {
 	}
 	app.WriteTomlConfig(deter, "deter.toml", d.DeployDir)
 
+	// copy an eventual example/-directory from the app-directory
+	appDir := d.AppDir + "/" + d.App
+	dbg.Print("Copying from " + appDir)
+	err := exec.Command("cp", "-a", appDir+"/example", d.DeployDir).Run()
+	if err != nil {
+		dbg.Fatal("error copying webfiles:", err)
+	}
 	// copy the webfile-directory of the logserver to the remote directory
-	err := exec.Command("cp", "-a", d.DeterDir+"/cothority.conf", d.DeployDir).Run()
+	err = exec.Command("cp", "-a", d.DeterDir+"/cothority.conf", d.DeployDir).Run()
 	if err != nil {
 		dbg.Fatal("error copying webfiles:", err)
 	}

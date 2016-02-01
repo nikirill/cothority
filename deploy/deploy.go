@@ -65,6 +65,7 @@ func init() {
 	flag.StringVar(&build, "build", "", "List of packages to build")
 	flag.IntVar(&machines, "machines", machines, "Number of machines on Deterlab")
 	flag.IntVar(&monitorPort, "mport", monitorPort, "Port-number for monitor")
+	flag.IntVar(&dbg.DebugVisible, "debug", dbg.DebugVisible, "Debug-level: 1 (little) - 5 (torrent)")
 	flag.StringVar(&simRange, "range", simRange, "Range of simulations to run. 0: or 3:4 or :4")
 }
 

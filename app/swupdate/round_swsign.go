@@ -86,11 +86,12 @@ func (round *RoundSwsign) Response(in []*sign.SigningMessage, out *sign.SigningM
 
 		pgp := monitor.NewMeasure("pgp")
 		decision, err := ApprovalCheck(entry.policy, entry.signatures, msg)
+		pgp.Measure()
+
 		if !decision || err != nil {
 			dbg.Lvl1("Developers haven't approved this release")
 			round.RaiseException()
 		}
-		pgp.Measure()
 		// Check on something, when it fails, call
 		// round.RaiseException()
 	}

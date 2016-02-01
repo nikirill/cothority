@@ -81,12 +81,13 @@ func main() {
 			dbg.Lvl1("Doing round", round, "of", conf.Rounds)
 			wallTime := monitor.NewMeasure("round")
 			hashToSign, _ := CommitScanner(CommitIdFile) // retrieve commitid/hash that the root is willing to get signed
-			//commitToSign := Releases[hashToSign]
+
 			entry := Releases[hashToSign]
 			if entry.policy != "" && entry.signatures != "" {
 				rootpgpTime := monitor.NewMeasure("rootpgp")
 				decision, err := ApprovalCheck(entry.policy, entry.signatures, hashToSign)
 				rootpgpTime.Measure()
+
 				if decision && err == nil {
 					round := NewRoundSwsign(peer.Node)
 					round.Hash = []byte(hashToSign) // passing hash of the file that we want to produce a signature for
