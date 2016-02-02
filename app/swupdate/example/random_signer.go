@@ -14,7 +14,7 @@ import (
 
 func main() {
 	const text = `cf0b83954b84c27b2e7c345e1356b4d0f9de9a33`
-	const amount = 625
+	const amount = 100
 	const poname = "policy.txt"
 	const cothk = `BFZMf2MBCADjrCHk+W+MTXh9ZiwAScnaROwEER39zuieHdz0g9whVVTubl8SakGp
 sCw7ZjHJARC+YqRH2oiqqLQ0ZYp7SFLcByin4FLJBqHeuCONhP1j6DHj5yDfNcyP`

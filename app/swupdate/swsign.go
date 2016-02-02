@@ -19,6 +19,7 @@ var Releases map[string]CommitEntry
 type CommitEntry struct {
 	policy     string
 	signatures string
+	decision   bool
 }
 
 // func ReleaseInformation() {
@@ -36,7 +37,7 @@ func ReadRelease(pf, sf, cif string) {
 	if err != nil {
 		dbg.Panic("Cannot read commitid corresponding to the release")
 	} else {
-		Releases[cid] = CommitEntry{pf, sf}
+		Releases[cid] = CommitEntry{pf, sf, false}
 		dbg.Lvl3("Added a new entry to release table")
 	}
 

@@ -1,23 +1,18 @@
 package main
 
 import (
+	"sync"
+
 	"github.com/dedis/cothority/lib/dbg"
-	"github.com/dedis/cothority/lib/monitor"
 	"github.com/dedis/cothority/lib/sign"
 )
-
-/*
-RoundSwsign is a bare-bones round implementation to be copy-pasted. It
-already implements RoundStruct for your convenience.
-*/
 
 // The name type of this round implementation
 const RoundSwsignType = "swsign"
 
-var (
-	entry CommitEntry
-	msg   string
-)
+var entry CommitEntry
+
+var wg sync.WaitGroup
 
 type RoundSwsign struct {
 	*sign.RoundStruct
@@ -31,6 +26,15 @@ func init() {
 		func(node *sign.Node) sign.Round {
 			return NewRoundSwsign(node)
 		})
+}
+
+func verify(metadata *CommitEntry, beSigned string) {
+	defer wg.Done()
+	var err error
+	metadata.decision, err = ApprovalCheck(metadata.policy, metadata.signatures, beSigned)
+	if err != nil {
+		dbg.Lvl1("Problem with verifying approval of developers")
+	}
 }
 
 func NewRoundSwsign(node *sign.Node) *RoundSwsign {
@@ -55,8 +59,15 @@ func (round *RoundSwsign) Announcement(viewNbr, roundNbr int, in *sign.SigningMe
 	} else {
 		// If child, retrieve corresponding commit from a table to check approval later
 		// commitToSign = Releases[string(in.Am.Message)]
-		msg = string(in.Am.Message)
+		msg := string(in.Am.Message)
 		entry = Releases[msg]
+		if entry.policy == "" || entry.signatures == "" {
+			dbg.Lvl1("The cothority server has not received information about this release from its developers")
+		} else {
+			wg.Add(1)
+			go verify(&entry, msg)
+		}
+
 	}
 
 	return err
@@ -79,16 +90,17 @@ func (round *RoundSwsign) Challenge(in *sign.SigningMessage, out []*sign.Signing
 
 func (round *RoundSwsign) Response(in []*sign.SigningMessage, out *sign.SigningMessage) error {
 	if !round.IsRoot {
-		if entry.policy == "" || entry.signatures == "" {
-			dbg.Lvl1("The cothority server has not received information about this release from its developers")
-			round.RaiseException()
-		}
+		// if entry.policy == "" || entry.signatures == "" {
+		// 	dbg.Lvl1("The cothority server has not received information about this release from its developers")
+		// 	round.RaiseException()
+		// }
 
-		pgp := monitor.NewMeasure("pgp")
-		decision, err := ApprovalCheck(entry.policy, entry.signatures, msg)
-		pgp.Measure()
+		// pgp := monitor.NewMeasure("pgp")
+		// decision, err := ApprovalCheck(entry.policy, entry.signatures, msg)
+		// pgp.Measure()
+		wg.Wait()
 
-		if !decision || err != nil {
+		if !entry.decision {
 			dbg.Lvl1("Developers haven't approved this release")
 			round.RaiseException()
 		}
